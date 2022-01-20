@@ -1,0 +1,90 @@
+[
+  {
+    "name": "app",
+    "image": "${aws_account_id}.dkr.ecr.ap-northeast-1.amazonaws.com/${rsrc_prefix}-app",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "/ecs/${rsrc_prefix}",
+        "awslogs-region": "ap-northeast-1",
+        "awslogs-stream-prefix": "production"
+      }
+    },
+    "environment": [
+      {
+        "name": "DATABASE_HOST",
+        "value": "${database_host}"
+      },
+      {
+        "name": "DATABASE_NAME",
+        "value": "${database_name}"
+      },
+      {
+        "name": "DATABASE_PASSWORD",
+        "value": "${database_password}"
+      },
+      {
+        "name": "DATABASE_USERNAME",
+        "value": "${database_username}"
+      },
+      {
+        "name": "RAILS_ENV",
+        "value": "production"
+      },
+      {
+        "name": "APP_HOST",
+        "value": "${app_host}"
+      },
+      {
+        "name": "RAILS_MASTER_KEY",
+        "value": "${rails_master_key}"
+      },
+      {
+        "name": "RAILS_LOG_TO_STDOUT",
+        "value": "1"
+      },
+      {
+        "name": "MAILER_USER_NAME",
+        "value": "${mailer_user_name}"
+      },
+      {
+        "name": "MAILER_PASSWORD",
+        "value": "${mailer_password}"
+      },
+      {
+        "name": "TZ",
+        "value": "Japan"
+      }
+    ],
+    "command": ["bash", "-c", "bundle exec puma -C config/puma.rb"],
+    "workingDirectory": "/myapp",
+    "essential": true
+  },
+  {
+    "name": "nginx",
+    "image": "${aws_account_id}.dkr.ecr.ap-northeast-1.amazonaws.com/${rsrc_prefix}-nginx",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "secretOptions": null,
+      "options": {
+        "awslogs-group": "/ecs/${rsrc_prefix}",
+        "awslogs-region": "ap-northeast-1",
+        "awslogs-stream-prefix": "production"
+      }
+    },
+    "portMappings": [
+      {
+        "protocol": "tcp",
+        "containerPort": 80
+      }
+    ],
+    "workingDirectory": "/myapp",
+    "volumesFrom": [
+      {
+        "sourceContainer": "app",
+        "readOnly": false
+      }
+    ],
+    "essential": true
+  }
+]
